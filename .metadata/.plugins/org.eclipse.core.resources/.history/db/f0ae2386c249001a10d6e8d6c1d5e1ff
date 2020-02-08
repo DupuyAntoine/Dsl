@@ -1,0 +1,75 @@
+package dsl.aspects
+
+import fr.inria.diverse.k3.al.annotationprocessor.Aspect
+import dsl.FSM
+import dsl.State
+import dsl.Transition
+import dsl.InitialState
+
+import static extension dsl.aspects.FSMAspect.*
+import static extension dsl.aspects.StateAspect.*
+import static extension dsl.aspects.TransitionAspect.*
+import static extension dsl.aspects.InitialStateAspect.*
+import fr.inria.diverse.k3.al.annotationprocessor.Step
+import dsl.DslPackage
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl
+import org.eclipse.emf.common.util.URI
+import java.util.Scanner
+
+class Interpreter {
+	def static void main(String[] args) {
+		DslPackage.eINSTANCE.class
+		Resource$Factory.Registry.INSTANCE.extensionToFactoryMap.put("xmi", new XMIResourceFactoryImpl());
+		var Resource resource = new ResourceSetImpl().getResource(URI.createURI('\\Users\\AdminEtu\\gemoc\\workspace\\dsl\\model\\FSM.xmi'), true);
+		var myfsm = resource.contents.get(0) as FSM
+		myfsm.interprete
+	}
+}
+
+@Aspect(className=FSM)
+class FSMAspect {
+	/* @Step
+	def void execute() {
+		_self.state.forEach[s|println('''class ''' + s.name)]
+	} */
+	
+	@Step
+	def void interprete() {
+		var Scanner sc = new Scanner(System.in);
+		var State current;
+		current = _self.getInitialstate();
+		while (!current.isFinal) {
+        	System.out.println("Veuillez saisir le transition trigger :");
+        	var String str;
+        	str = sc.nextLine();
+			for (tr : _self.transition) {
+				if (current.name == tr.source.name && str == tr.trigger) {
+					System.out.println('********* Nouvelle transition *********')
+					System.out.println('source : ' + current.name)
+					current = tr.target
+					System.out.println('target : ' + current.name)
+				}
+			}
+		}
+	}
+}
+
+@Aspect(className=State)
+class StateAspect {
+
+}
+
+@Aspect(className=Transition)
+class TransitionAspect {
+
+}
+
+@Aspect(className=InitialState)
+class InitialStateAspect extends StateAspect {
+
+}
+
+
+
